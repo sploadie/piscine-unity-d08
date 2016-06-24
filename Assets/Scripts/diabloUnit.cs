@@ -3,6 +3,12 @@ using System.Collections;
 
 public class diabloUnit : MonoBehaviour {
 
+	public float health = 100f;
+	public float damage = 5f;
+	public float attackSpeed = 2f;
+
+	private float attackCooldown = 0f;
+
 	public NavMeshAgent agent { get; private set; }
 	public Animator animator { get; private set; }
 //	public float maxRemainingDistance = 1.0f;
@@ -11,7 +17,9 @@ public class diabloUnit : MonoBehaviour {
 	public State state;
 	public enum State { idle, running, attacking, dead }
 
-	bool shouldMove = false;
+	private diabloUnit target;
+
+	private bool shouldMove = false;
 
 	void OnDrawGizmos() {
 		if (agent && agent.hasPath) {
@@ -34,8 +42,12 @@ public class diabloUnit : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		attackCooldown -= Time.deltaTime;
 		// PRE ANIMATION
-		if (state < State.attacking) {
+		if (target) {
+			agent.destination = target.transform.position;
+		}
+		if (state != State.dead) {
 			// Get agent delta
 			Vector3 worldDeltaPosition = agent.nextPosition - transform.position;
 			// Update velocity if moving
@@ -55,10 +67,9 @@ public class diabloUnit : MonoBehaviour {
 			// Pull character towards agent
 			if (worldDeltaPosition.magnitude > agent.radius)
 				transform.position = agent.nextPosition - 0.9f*worldDeltaPosition;
+			// ANIMATION
+			animator.SetInteger ("state", (int)state);
 		}
-		// ANIMATION
-		animator.SetInteger ("state", (int)state);
-		// POST ANIMATION
 	}
 
 	void OnAnimatorMove () {
@@ -74,7 +85,54 @@ public class diabloUnit : MonoBehaviour {
 	}
 
 	public void runTo(Vector3 destination) {
-		state = State.running;
-		agent.destination = destination;
+		if (attackCooldown <= 0) {
+			target = null;
+			state = State.running;
+			agent.destination = destination;
+		} else if (!actionWasDelayed) {
+			actionWasDelayed = true;
+			delayedDestination = destination;
+			delayedTarget = null;
+			Invoke("delayedAction", attackCooldown);
+		}
 	}
+
+	public void attack(diabloUnit victim) {
+		if (attackCooldown <= 0) {
+			target = victim;
+		} else if (!actionWasDelayed) {
+			actionWasDelayed = true;
+			delayedTarget = victim;
+			Invoke("delayedAction", attackCooldown);
+		}
+	}
+
+	private bool actionWasDelayed = false;
+	private Vector3 delayedDestination = Vector3.zero;
+	private diabloUnit delayedTarget = null;
+	private void delayedAction() {
+		if (delayedTarget)
+			attack (delayedTarget);
+		else
+			runTo (delayedDestination);
+		actionWasDelayed = false;
+	}
+
+	void handleStrike(Collider collider) {
+		if (!target)
+			return;
+		Debug.Log ("Triggered by " + collider.name);
+		diabloUnit victim = collider.GetComponent<diabloUnit> ();
+		if (victim == target) {
+			attackCooldown = attackSpeed;
+			transform.LookAt(target.transform.position);
+			animator.SetTrigger("attack");
+			target.health -= damage;
+			agent.ResetPath();
+			target = null;
+		}
+	}
+
+	void OnTriggerEnter(Collider collider) { handleStrike (collider); }
+	void OnTriggerStay(Collider collider) { handleStrike (collider); }
 }
