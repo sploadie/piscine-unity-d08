@@ -42,12 +42,22 @@ public class diabloUnit : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		attackCooldown -= Time.deltaTime;
-		// PRE ANIMATION
-		if (target) {
-			agent.destination = target.transform.position;
+		if (health < 0) {
+			if (state != State.dead) {
+				state = State.dead;
+				animator.SetInteger ("state", (int)state);
+				GameObject.Destroy(this.gameObject, 5);
+			}
+			transform.position += new Vector3 (0f, -0.1f, 0f) * Time.deltaTime;
 		}
 		if (state != State.dead) {
+			attackCooldown -= Time.deltaTime;
+			if (target) {
+				agent.destination = target.transform.position;
+				if (Vector3.Distance(transform.position, target.transform.position) < 2f) {
+					transform.LookAt(target.transform.position);
+				}
+			}
 			// Get agent delta
 			Vector3 worldDeltaPosition = agent.nextPosition - transform.position;
 			// Update velocity if moving
@@ -121,7 +131,6 @@ public class diabloUnit : MonoBehaviour {
 	void handleStrike(Collider collider) {
 		if (!target)
 			return;
-		Debug.Log ("Triggered by " + collider.name);
 		diabloUnit victim = collider.GetComponent<diabloUnit> ();
 		if (victim == target) {
 			attackCooldown = attackSpeed;

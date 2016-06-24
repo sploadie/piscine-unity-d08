@@ -24,12 +24,16 @@ public class diabloPlayer : MonoBehaviour {
 			Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 			Debug.DrawLine (mouseRay.origin, mouseRay.origin + mouseRay.direction * 100f, Color.red, 3f);
 			if (Physics.Raycast (mouseRay, out hit, Mathf.Infinity, 1)) {
-				Debug.Log ("Clicked " + hit.collider);
+//				Debug.Log ("Clicked " + hit.collider);
 				if (hit.collider.tag == "Zombie")
 					maya.attack(hit.collider.GetComponent<diabloUnit> ());
 				else
 					maya.runTo(hit.point);
 			}
 		}
+	}
+
+	void OnDestroy() {
+		Application.LoadLevel(Application.loadedLevel);
 	}
 }

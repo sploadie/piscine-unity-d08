@@ -48,6 +48,7 @@
      <Compile Include="Assets\Scripts\DiabloCamera.cs" />
      <Compile Include="Assets\Scripts\diabloPlayer.cs" />
      <Compile Include="Assets\Scripts\diabloUnit.cs" />
+     <Compile Include="Assets\Scripts\enemyScript.cs" />
      <Compile Include="Assets\Scripts\genericMeter.cs" />
      <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAlpha.shader" />
      <None Include="Assets\Standard Assets\ParticleSystems\ParticleSystemsGuidelines.txt" />
