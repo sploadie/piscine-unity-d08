@@ -1,20 +1,17 @@
 fileFormatVersion: 2
-guid: 3f3ffcd0c0b25ca45a7c9851c985d264
-timeCreated: 1432916933
+guid: 83153156eb8a04c8f8f4a77e9000d04b
+timeCreated: 1466867050
 licenseType: Free
 ModelImporter:
   serializedVersion: 18
   fileIDToRecycleName:
-    100000: Camera
-    100002: Plane
-    100004: //RootNode
-    400000: Camera
-    400002: Plane
-    400004: //RootNode
-    2300000: Plane
-    3300000: Plane
-    4300000: Plane
-    7400000: Default Take
+    100000: default
+    100002: //RootNode
+    400000: default
+    400002: //RootNode
+    2300000: default
+    3300000: default
+    4300000: default
     9500000: //RootNode
   materials:
     importMaterials: 1
@@ -29,7 +26,7 @@ ModelImporter:
     animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
-    animationCompression: 1
+    animationCompression: 3
     animationRotationError: .5
     animationPositionError: .5
     animationScaleError: .5
@@ -39,7 +36,7 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 52
+    globalScale: .100000001
     meshCompression: 0
     addColliders: 0
     importBlendShapes: 1
@@ -74,7 +71,7 @@ ModelImporter:
     rootMotionBoneName: 
     hasTranslationDoF: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 2
+  animationType: 0
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

@@ -7,7 +7,7 @@ public class diabloUnit : MonoBehaviour {
 	public float damage = 5f;
 	public float attackSpeed = 2f;
 
-	private float attackCooldown = 0f;
+	public float attackCooldown { get; private set; }
 
 	public NavMeshAgent agent { get; private set; }
 	public Animator animator { get; private set; }
@@ -33,11 +33,14 @@ public class diabloUnit : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		state = State.idle;
+		attackCooldown = 0f;
+		// Agent handles turning but not moving
 		agent = GetComponent<NavMeshAgent> ();
 		agent.updateRotation = true;
 		agent.updatePosition = false;
+		// Animator
 		animator = GetComponent<Animator> ();
-		state = State.idle;
 	}
 	
 	// Update is called once per frame
