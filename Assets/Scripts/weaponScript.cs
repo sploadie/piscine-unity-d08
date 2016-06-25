@@ -9,13 +9,14 @@ public class weaponScript : MonoBehaviour {
 
 	public Transform hand { get; private set;}
 	public GameObject weapon;
+	public bool hideWeapon = true;
 
 	// Use this for initialization
 	void Start () {
 		MeshRenderer weaponMesh = this.GetComponentInChildren<MeshRenderer> ();
 		if (weaponMesh)
 			weapon = weaponMesh.gameObject;
-		if (weapon)
+		if (weapon != null && hideWeapon)
 			weapon.SetActive(false);
 		if (unit != null && unit.animator != null)
 			hand = unit.animator.GetBoneTransform (HumanBodyBones.RightHand);
@@ -28,10 +29,12 @@ public class weaponScript : MonoBehaviour {
 		if (hand && weapon) {
 			transform.position = hand.position + positionOffset;
 			transform.rotation = hand.rotation * Quaternion.Euler (rotationOffset);
-			if (unit.attackCooldown > 0)
-				weapon.SetActive(true);
-			else
-				weapon.SetActive(false);
+			if (hideWeapon) {
+				if (unit.attackCooldown > 0)
+					weapon.SetActive(true);
+				else
+					weapon.SetActive(false);
+			}
 		}
 	}
 }

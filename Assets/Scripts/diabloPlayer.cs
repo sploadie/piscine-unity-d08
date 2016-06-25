@@ -12,6 +12,7 @@ public class diabloPlayer : MonoBehaviour {
 	public bool paused { get; private set; }
 
 	public genericMeter healthBar;
+	public genericMeter XPBar;
 	public DiabloCamera enemyCam;
 
 	void Awake() {
@@ -39,7 +40,8 @@ public class diabloPlayer : MonoBehaviour {
 			}
 		}
 		if (!paused && maya) {
-			healthBar.setBar(maya.health / 100);
+			healthBar.setBar(maya.health / maya.maxHealth);
+			XPBar.setBar((float)maya.playerXP / (float)(maya.Level * 10));
 			if (maya.target != null) {
 				enemyCam.focus = maya.target;
 			} else if (enemyCam.focus == null) {

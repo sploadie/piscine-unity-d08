@@ -3,9 +3,17 @@ using System.Collections;
 
 public class diabloUnit : MonoBehaviour {
 
-	public float health = 100f;
-	public float damage = 5f;
-	public float attackSpeed = 2f;
+	public int Level = 1;
+	public int Strength = 1;
+	public int Constitution = 1;
+	public int Agility = 1;
+	public int playerXP = 0;
+	
+	public float maxHealth { get; private set; }
+	public float health { get; private set; }
+	public float regen { get; private set; }
+	public float attackSpeed { get; private set; }
+	public float power { get; private set; }
 
 	public float attackCooldown { get; private set; }
 
@@ -31,10 +39,13 @@ public class diabloUnit : MonoBehaviour {
 //			Gizmos.DrawIcon (animator.rootPosition, "enemy.png");
 	}
 
-	// Use this for initialization
-	void Start () {
+	void Awake() {
 		state = State.idle;
 		attackCooldown = 0f;
+		SetStats ();
+	}
+
+	void Start () {
 		// Agent handles turning but not moving
 		agent = GetComponent<NavMeshAgent> ();
 		agent.updateRotation = true;
@@ -46,14 +57,16 @@ public class diabloUnit : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		// Handle death
-		if (health < 0) {
+		if (health <= 0) {
 			if (state != State.dead) {
 				state = State.dead;
 				animator.SetInteger ("state", (int)state);
-				GameObject.Destroy(this.gameObject, 5);
+				GameObject.Destroy (this.gameObject, 5);
 			}
 			// On death, unit sinks into ground
 			transform.position += new Vector3 (0f, -0.1f, 0f) * Time.deltaTime;
+		} else {
+			health = Mathf.Clamp (health + regen * Time.deltaTime, 0, maxHealth);
 		}
 		if (state != State.dead) {
 			// Increment attack action cooldown
@@ -79,12 +92,14 @@ public class diabloUnit : MonoBehaviour {
 				// Move unit at speed of agent by manipulating animation speed
 				state = State.running;
 				animator.speed = agent.velocity.magnitude / 5.315f; // Must know average rootmotion velocity (Z axis)
-			} else {
+			} else if (attackCooldown <= 0) {
 				// Smooth stop animation (animation speed lerps back to max)
 				state = State.idle;
 				animator.applyRootMotion = false;
-				if (animator.speed < 1) {
+				if (animator.speed < 1f) {
 					animator.speed = Mathf.Clamp01(animator.speed + Time.deltaTime);
+				} else if (animator.speed > 1f) {
+					animator.speed = Mathf.Clamp(animator.speed - Time.deltaTime, 1f, 5f);
 				}
 			}
 			// Pull unit towards agent
@@ -148,12 +163,17 @@ public class diabloUnit : MonoBehaviour {
 		diabloUnit victim = collider.GetComponent<diabloUnit> ();
 		if (victim == target) {
 			// Set attack cooldown quickly to prevent action overlap (not sure it actually matters but jic)
-			attackCooldown = attackSpeed;
+			// All of this works because attack animation lasts less than one second
+			animator.speed = attackSpeed;
+			attackCooldown = 1f / attackSpeed;
 			// Look at target and perform attack animation
 			transform.LookAt(target.transform.position);
 			animator.SetTrigger("attack");
 			// Deal damage to unit
-			target.health -= damage;
+			target.health -= (power + Random.Range(0f, 4f));
+			if (target.health <= 0) {
+				playerXP += target.Level;
+			}
 			// Tell agent to stop
 			agent.ResetPath();
 			// Set post-attack action (to be overwritten if player wishes)
@@ -167,4 +187,12 @@ public class diabloUnit : MonoBehaviour {
 
 	void OnTriggerEnter(Collider collider) { handleStrike (collider); }
 	void OnTriggerStay(Collider collider) { handleStrike (collider); }
+
+	public void SetStats () {
+		maxHealth = Constitution * 5;
+		health = Constitution * 5;
+		regen = (float)Constitution / 10;
+		attackSpeed = 0.5f + (0.05f * Agility);
+		power = (float)Strength / 2;
+	}
 }
