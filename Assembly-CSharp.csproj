@@ -50,6 +50,7 @@
      <Compile Include="Assets\Scripts\diabloUnit.cs" />
      <Compile Include="Assets\Scripts\enemyScript.cs" />
      <Compile Include="Assets\Scripts\genericMeter.cs" />
+     <Compile Include="Assets\Scripts\kamikaze.cs" />
      <Compile Include="Assets\Scripts\niceFeet.cs" />
      <Compile Include="Assets\Scripts\spawner.cs" />
      <Compile Include="Assets\Scripts\weaponScript.cs" />
