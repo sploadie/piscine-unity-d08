@@ -17,7 +17,7 @@ public class diabloUnit : MonoBehaviour {
 	public State state;
 	public enum State { idle, running, attacking, dead }
 
-	private diabloUnit target;
+	public diabloUnit target { get; private set; }
 
 	private bool shouldMove = false;
 

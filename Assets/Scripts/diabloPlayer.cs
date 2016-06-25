@@ -11,6 +11,9 @@ public class diabloPlayer : MonoBehaviour {
 	public Text pauseText;
 	public bool paused { get; private set; }
 
+	public genericMeter healthBar;
+	public DiabloCamera enemyCam;
+
 	void Awake() {
 		if (!instance)
 			instance = this;
@@ -36,6 +39,12 @@ public class diabloPlayer : MonoBehaviour {
 			}
 		}
 		if (!paused && maya) {
+			healthBar.setBar(maya.health / 100);
+			if (maya.target != null) {
+				enemyCam.focus = maya.target;
+			} else if (enemyCam.focus == null) {
+				enemyCam.focus = maya;
+			}
 			if (Input.GetMouseButtonDown (0)) {
 				RaycastHit hit;
 				Ray mouseRay = Camera.main.ScreenPointToRay (Input.mousePosition);

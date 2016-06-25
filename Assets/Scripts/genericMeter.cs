@@ -24,4 +24,8 @@ public class genericMeter : MonoBehaviour {
 	public void setNeedle(float percent) {
 		meter.localRotation = Quaternion.Euler (0f, 0f, 60f - (120 * Mathf.Clamp01 (percent)));
 	}
+
+	public void setBar(float percent) {
+		meter.sizeDelta = new Vector2 (maxSize * percent, meter.sizeDelta.y);
+	}
 }
