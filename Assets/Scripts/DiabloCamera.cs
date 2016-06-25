@@ -20,5 +20,6 @@ public class DiabloCamera : MonoBehaviour {
 		} else {
 			transform.Rotate (0f, -Input.GetAxis ("Horizontal"), 0f);
 		}
+		Camera.main.fieldOfView = Mathf.Clamp (Camera.main.fieldOfView - Input.GetAxis ("Vertical"), 20f, 80f);
 	}
 }

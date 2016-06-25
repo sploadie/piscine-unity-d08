@@ -13,8 +13,10 @@ public class enemyScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (aggroDistance > Vector3.Distance (this.transform.position, diabloPlayer.instance.maya.transform.position)) {
-			enemy.attack(diabloPlayer.instance.maya);
+		if (diabloPlayer.instance.maya) {
+			if (aggroDistance > Vector3.Distance (this.transform.position, diabloPlayer.instance.maya.transform.position)) {
+				enemy.attack (diabloPlayer.instance.maya);
+			}
 		}
 	}
 }

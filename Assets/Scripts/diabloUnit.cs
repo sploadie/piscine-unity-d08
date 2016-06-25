@@ -23,12 +23,12 @@ public class diabloUnit : MonoBehaviour {
 
 	void OnDrawGizmos() {
 		if (agent && agent.hasPath) {
-			Gizmos.DrawIcon (agent.nextPosition, "enemy.png");
+			Gizmos.DrawIcon (agent.nextPosition, "wayPoint.png");
 			Gizmos.color = Color.blue;
 			Gizmos.DrawLine (agent.nextPosition, agent.destination);
 		}
-		if (animator)
-			Gizmos.DrawIcon (animator.rootPosition, "death.png");
+//		if (animator)
+//			Gizmos.DrawIcon (animator.rootPosition, "enemy.png");
 	}
 
 	// Use this for initialization
@@ -42,39 +42,49 @@ public class diabloUnit : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		// Handle death
 		if (health < 0) {
 			if (state != State.dead) {
 				state = State.dead;
 				animator.SetInteger ("state", (int)state);
 				GameObject.Destroy(this.gameObject, 5);
 			}
+			// On death, unit sinks into ground
 			transform.position += new Vector3 (0f, -0.1f, 0f) * Time.deltaTime;
 		}
 		if (state != State.dead) {
+			// Increment attack action cooldown
 			attackCooldown -= Time.deltaTime;
+			// Move towards target if target exists and is not dead
+			// If target not set, unit still moves if agent has destination (by runTo)
 			if (target) {
-				agent.destination = target.transform.position;
-				if (Vector3.Distance(transform.position, target.transform.position) < 2f) {
-					transform.LookAt(target.transform.position);
+				if (target.state == State.dead) {
+					target = null;
+					agent.ResetPath();
+				} else {
+					agent.destination = target.transform.position;
+					if (Vector3.Distance(transform.position, target.transform.position) < 2f) {
+						transform.LookAt(target.transform.position);
+					}
 				}
 			}
 			// Get agent delta
 			Vector3 worldDeltaPosition = agent.nextPosition - transform.position;
-			// Update velocity if moving
+			// Set if the agent should pull the unit
 			shouldMove = agent.hasPath;
-			// Update animation parameters
 			if (shouldMove) {
+				// Move unit at speed of agent by manipulating animation speed
 				state = State.running;
 				animator.speed = agent.velocity.magnitude / 5.315f; // Must know average rootmotion velocity (Z axis)
 			} else {
+				// Smooth stop animation (animation speed lerps back to max)
 				state = State.idle;
 				animator.applyRootMotion = false;
 				if (animator.speed < 1) {
 					animator.speed = Mathf.Clamp01(animator.speed + Time.deltaTime);
 				}
 			}
-
-			// Pull character towards agent
+			// Pull unit towards agent
 			if (worldDeltaPosition.magnitude > agent.radius)
 				transform.position = agent.nextPosition - 0.9f*worldDeltaPosition;
 			// ANIMATION
@@ -83,24 +93,23 @@ public class diabloUnit : MonoBehaviour {
 	}
 
 	void OnAnimatorMove () {
-		// Update position to agent position (along Y axis)
+		// After animation moves unit, fix unit position
 		if (shouldMove) {
 			Vector3 position = animator.rootPosition;
 			if (position.y < agent.nextPosition.y)
-				position.y = agent.nextPosition.y; // This should be for positive or negative delta, but I'll settle for my character not sinking into rock
+				position.y = agent.nextPosition.y; // This should adjust Y axis if agent ever moves more than animation (like jumps and stairs), but whatever
 			transform.position = position;
-		}// else {
-//			transform.position = agent.nextPosition;
-//		}
+		}
 	}
 
 	public void runTo(Vector3 destination) {
+		// Move to new destination
+		// If attack is in progress, overwrite post-attack action
 		if (attackCooldown <= 0) {
 			target = null;
 			state = State.running;
 			agent.destination = destination;
-		} else if (!actionWasDelayed) {
-			actionWasDelayed = true;
+		} else {
 			delayedDestination = destination;
 			delayedTarget = null;
 			Invoke("delayedAction", attackCooldown);
@@ -108,37 +117,48 @@ public class diabloUnit : MonoBehaviour {
 	}
 
 	public void attack(diabloUnit victim) {
+		// Move in and attack new target
+		// If attack is in progress, overwrite post-attack action
 		if (attackCooldown <= 0) {
 			target = victim;
-		} else if (!actionWasDelayed) {
-			actionWasDelayed = true;
+		} else {
 			delayedTarget = victim;
 			Invoke("delayedAction", attackCooldown);
 		}
 	}
 
-	private bool actionWasDelayed = false;
 	private Vector3 delayedDestination = Vector3.zero;
 	private diabloUnit delayedTarget = null;
 	private void delayedAction() {
+		// Post-attack action
+		// Overwritten by last command given during attack cooldown
 		if (delayedTarget)
 			attack (delayedTarget);
 		else
 			runTo (delayedDestination);
-		actionWasDelayed = false;
 	}
 
 	void handleStrike(Collider collider) {
-		if (!target)
+		// If collision wasn't with target, ignore collision
+		if (!target || target.state == State.dead)
 			return;
 		diabloUnit victim = collider.GetComponent<diabloUnit> ();
 		if (victim == target) {
+			// Set attack cooldown quickly to prevent action overlap (not sure it actually matters but jic)
 			attackCooldown = attackSpeed;
+			// Look at target and perform attack animation
 			transform.LookAt(target.transform.position);
 			animator.SetTrigger("attack");
+			// Deal damage to unit
 			target.health -= damage;
+			// Tell agent to stop
 			agent.ResetPath();
+			// Set post-attack action (to be overwritten if player wishes)
+			delayedTarget = target;
+			// Clear target so agent doesn't try to move closer
 			target = null;
+			// Invoke delayed action
+			Invoke("delayedAction", attackCooldown);
 		}
 	}
 
