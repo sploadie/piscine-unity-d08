@@ -28,6 +28,7 @@ public class spawner : MonoBehaviour {
 
 	private void spawn() {
 		liveUnit = GameObject.Instantiate (unit, transform.position, transform.rotation) as diabloUnit;
+		liveUnit.transform.parent = this.transform;
 		spawning = false;
 	}
 }

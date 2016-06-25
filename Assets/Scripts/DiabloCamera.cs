@@ -22,6 +22,9 @@ public class DiabloCamera : MonoBehaviour {
 		} else {
 			transform.Rotate (0f, -Input.GetAxis ("Horizontal"), 0f);
 		}
-		Camera.main.fieldOfView = Mathf.Clamp (Camera.main.fieldOfView - Input.GetAxis ("Vertical"), 20f, 80f);
+//		Camera.main.fieldOfView = Mathf.Clamp (Camera.main.fieldOfView - Input.GetAxis ("Vertical"), 20f, 80f);
+		float scale = -Input.GetAxis ("Vertical") * Time.deltaTime;
+		if (!(Camera.main.transform.localPosition.y <= 2.1f && scale < 0) && !(Camera.main.transform.localPosition.y >= 8f && scale > 0))
+		Camera.main.transform.localPosition = Vector3.Scale (Camera.main.transform.localPosition, new Vector3 (1f+scale, 1f+(scale/2f), 1f+scale));
 	}
 }
